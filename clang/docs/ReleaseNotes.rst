@@ -1079,6 +1079,8 @@ clang-format
 - Add ``ObjCPropertyAttributeOrder`` which can be used to sort ObjC property
   attributes (like ``nonatomic, strong, nullable``).
 - Add ``.clang-format-ignore`` files.
+- Add ``InAttributeSpecifiers`` style option to ``SpacesInParensOptions``
+  to control addition of spaces after the ``__attribute__`` keyword.
 
 libclang
 --------
