@@ -4010,6 +4010,34 @@ bool TokenAnnotator::spaceRequiredBetween(const AnnotatedLine &Line,
         isAttributeParen(Left.Previous) || isAttributeParen(Right.Next)) {
       return Style.SpacesInParensOptions.InAttributeSpecifiers;
     }
+    // Function declaration or definition
+    const auto isFunctionDeclParen = [](const FormatToken *Paren) {
+      return Paren && Paren->is(TT_FunctionDeclarationName);
+    };
+    if (isFunctionDeclParen(Left.Previous) ||
+        (Right.MatchingParen &&
+         isFunctionDeclParen(Right.MatchingParen->Previous))) {
+      if (Line.MightBeFunctionDecl) {
+        if (Line.mightBeFunctionDefinition())
+          return Style.SpacesInParensOptions.InFunctionDefinitions;
+        return Style.SpacesInParensOptions.InFunctionDeclarations;
+      }
+      return Style.SpacesInParensOptions.Other;
+    }
+    if (Left.is(TT_OverloadedOperatorLParen) ||
+        (Right.MatchingParen &&
+         Right.MatchingParen->is(TT_OverloadedOperatorLParen))) {
+      return Style.SpacesInParensOptions.InOverloadedOperators;
+    }
+    const auto isFunctionCallParen = [](const FormatToken *Paren) {
+      return Paren && Paren->ParameterCount > 0 && Paren->Previous &&
+             Paren->Previous->is(tok::identifier);
+    };
+    if ((isFunctionCallParen(&Left) ||
+         isFunctionCallParen(Right.MatchingParen)) &&
+        (Line.Type != LT_PreprocessorDirective)) {
+      return Style.SpacesInParensOptions.InFunctionCalls;
+    }
     return Style.SpacesInParensOptions.Other;
   }
   if (Right.isOneOf(tok::semi, tok::comma))
